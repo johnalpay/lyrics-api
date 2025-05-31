@@ -1,23 +1,27 @@
-app.get('/api/lyrics', async (req, res) => {
-  const { artist, title } = req.query;
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
 
-  if (!artist || !title) {
-    return res.status(400).json({ error: 'Missing artist or title', author: 'Sxe Ci' });
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+
+app.get('/api/lyrics', async (req, res) => {
+  const title = req.query.title;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Missing title parameter' });
   }
 
   try {
-    const response = await axios.get(`https://api.lyrics.ovh/v1/${artist}/${title}`);
-    if (response.data && response.data.lyrics) {
-      res.json({
-        artist,
-        title,
-        lyrics: response.data.lyrics,
-        author: 'Sxe Ci'
-      });
-    } else {
-      res.status(404).json({ error: 'Lyrics not found', author: 'Sxe Ci' });
-    }
+    const response = await axios.get(`https://betadash-api-swordslush-production.up.railway.app/lyrics-finder?title=${encodeURIComponent(title)}`);
+    res.json(response.data);
   } catch (err) {
-    res.status(500).json({ error: 'Internal Server Error', author: 'Sxe Ci' });
+    res.status(500).json({ error: 'Failed to fetch lyrics' });
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
