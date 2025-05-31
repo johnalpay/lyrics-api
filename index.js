@@ -1,7 +1,10 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/lyrics', async (req, res) => {
   const { title, artist } = req.query;
@@ -27,10 +30,6 @@ app.get('/api/lyrics', async (req, res) => {
       author: 'Sxe Ci'
     });
   }
-});
-
-app.get('/', (req, res) => {
-  res.send('🎵 Lyrics API by Sxe Ci is running!');
 });
 
 app.listen(PORT, () => {
