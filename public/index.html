@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lyrics Finder by Sxe Ci</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input {
+      background: #222;
+      color: #fff;
+    }
+    button {
+      background: #0f62fe;
+      color: white;
+      cursor: pointer;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #222;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #0f62fe;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎵 Lyrics Finder</h1>
+  <form id="lyricsForm">
+    <input type="text" id="artist" placeholder="Artist (e.g. Ed Sheeran)" required />
+    <input type="text" id="title" placeholder="Song Title (e.g. Perfect)" required />
+    <button type="submit">Search Lyrics</button>
+  </form>
+  <pre id="output"></pre>
+
+  <script>
+    const form = document.getElementById('lyricsForm');
+    const output = document.getElementById('output');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const artist = document.getElementById('artist').value.trim();
+      const title = document.getElementById('title').value.trim();
+
+      output.textContent = '⏳ Searching...';
+
+      try {
+        const res = await fetch(`/api/lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
+        const data = await res.json();
+
+        if (data.lyrics) {
+          output.textContent = `🎵 ${title} by ${artist}\n\n${data.lyrics}\n\n— ${data.author}`;
+        } else {
+          output.textContent = `❌ ${data.error}\n— ${data.author}`;
+        }
+      } catch (err) {
+        output.textContent = '⚠️ Error fetching lyrics.';
+      }
+    });
+  </script>
+</body>
+</html>
