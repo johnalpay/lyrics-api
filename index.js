@@ -9,8 +9,8 @@ app.get('/api/lyrics', async (req, res) => {
     const response = await axios.get(`https://api.lyrics.ovh/v1/${artist}/${title}`);
     if (response.data && response.data.lyrics) {
       res.json({
-        artists: artist,
-        title: title,
+        artist,
+        title,
         lyrics: response.data.lyrics,
         author: 'Sxe Ci'
       });
