@@ -1,86 +1,38 @@
-const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
+import express from "express";
+import axios from "axios";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const GENIUS_TOKEN = process.env.GENIUS_TOKEN || 'x5JfP7-Vg_cLW_eS6zFM10cSyT9oWwg_TIooYgv5ShDpGmF4rTxikUzPs4RPcjB7'; // Token dapat ilagay sa env vars
+const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to Lyrics API by Sxe Ci',
-    usage: '/api/lyrics?query=Perfect Ed Sheeran',
-    author: 'Sxe Ci'
-  });
-});
+app.get("/lyrics", async (req, res) => {
+  const artist = req.query.artist;
+  const title = req.query.title;
 
-app.get('/api/lyrics', async (req, res) => {
-  const { query } = req.query;
-
-  if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter', author: 'Sxe Ci' });
-  }
-  if (!GENIUS_TOKEN) {
-    return res.status(500).json({ error: 'Missing Genius API Token in environment', author: 'Sxe Ci' });
+  if (!artist || !title) {
+    return res.status(400).json({ error: "Missing artist or title parameter" });
   }
 
   try {
-    // Step 1: Search Genius API for song info
-    const searchUrl = `https://api.genius.com/search?q=${encodeURIComponent(query)}`;
-    const searchRes = await axios.get(searchUrl, {
-      headers: {
-        Authorization: `Bearer ${GENIUS_TOKEN}`
-      }
-    });
+    // Call lyrics.ovh API
+    const response = await axios.get(
+      `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`
+    );
 
-    const hits = searchRes.data.response.hits;
-    if (!hits.length) {
-      return res.status(404).json({ error: 'No results found', author: 'Sxe Ci' });
-    }
-
-    // Get first hit song path
-    const songPath = hits[0].result.path;
-    const songTitle = hits[0].result.title;
-    const songArtist = hits[0].result.primary_artist.name;
-
-    // Step 2: Scrape lyrics page from Genius website
-    const lyricsUrl = `https://genius.com${songPath}`;
-    const pageRes = await axios.get(lyricsUrl);
-    const $ = cheerio.load(pageRes.data);
-
-    // Genius lyrics container might change, try multiple selectors:
-    let lyrics = $('.lyrics').text().trim();
-
-    if (!lyrics) {
-      // New Genius page layout
-      lyrics = '';
-      $('div[class^="Lyrics__Container"]').each((i, elem) => {
-        const snippet = $(elem).text().trim();
-        if (snippet.length !== 0) {
-          lyrics += snippet + '\n\n';
-        }
+    if (response.data && response.data.lyrics) {
+      return res.json({
+        artist,
+        title,
+        lyrics: response.data.lyrics,
+        author: "Sxe Ci"
       });
-      lyrics = lyrics.trim();
+    } else {
+      return res.status(404).json({ error: "Lyrics not found" });
     }
-
-    if (!lyrics) {
-      return res.status(404).json({ error: 'Lyrics not found on page', author: 'Sxe Ci' });
-    }
-
-    res.json({
-      title: songTitle,
-      artist: songArtist,
-      lyrics,
-      author: 'Sxe Ci'
-    });
-
   } catch (error) {
-    console.error(error.message || error);
-    res.status(500).json({ error: 'Internal Server Error', author: 'Sxe Ci' });
+    return res.status(500).json({ error: "Failed to fetch lyrics" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Lyrics API running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Lyrics API running at http://localhost:${port}`);
 });
-                                   
