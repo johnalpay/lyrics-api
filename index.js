@@ -1,38 +1,41 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
-app.get('/api/lyrics', async (req, res) => {
-  const { title, artist } = req.query;
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Lyrics API by Sxe Ci',
+    usage: '/api/lyrics?artist=Ed Sheeran&title=Perfect',
+    author: 'Sxe Ci'
+  });
+});
 
-  if (!title || !artist) {
-    return res.status(400).json({ 
-      error: 'Missing title or artist',
-      author: 'Sxe Ci'
-    });
+app.get('/api/lyrics', async (req, res) => {
+  const { artist, title } = req.query;
+
+  if (!artist || !title) {
+    return res.status(400).json({ error: 'Missing artist or title', author: 'Sxe Ci' });
   }
 
   try {
     const response = await axios.get(`https://api.lyrics.ovh/v1/${artist}/${title}`);
-    res.json({
-      title,
-      artist,
-      lyrics: response.data.lyrics,
-      author: 'Sxe Ci'
-    });
-  } catch (error) {
-    res.status(404).json({ 
-      error: 'Lyrics not found',
-      author: 'Sxe Ci'
-    });
+    if (response.data && response.data.lyrics) {
+      res.json({
+        artist,
+        title,
+        lyrics: response.data.lyrics,
+        author: 'Sxe Ci'
+      });
+    } else {
+      res.status(404).json({ error: 'Lyrics not found', author: 'Sxe Ci' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error', author: 'Sxe Ci' });
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('🎵 Lyrics API by Sxe Ci is running!');
-});
-
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Lyrics API running on port ${PORT}`);
 });
