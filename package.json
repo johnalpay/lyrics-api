@@ -1,16 +1,16 @@
 {
   "name": "lyrics-api",
   "version": "1.0.0",
-  "description": "Lyrics Finder API by Sxe Ci",
+  "description": "Simple lyrics API with no API key needed",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "keywords": ["lyrics", "api", "nodejs", "express"],
   "author": "Sxe Ci",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.6.8",
-    "cheerio": "^1.0.0-rc.12",
-    "express": "^4.18.4"
+    "axios": "^1.5.0",
+    "express": "^4.18.2"
   }
 }
